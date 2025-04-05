@@ -23,7 +23,9 @@ const NavBar = () => {
     
   return (
     <div className='w-full border-b 
-     border-gray-300 p-4 flex  justify-between h-[69px]' 
+     border-gray-300 p-4 flex  justify-between h-[69px] fixed top-0 
+     bg-white z-10
+     ' 
      >
       <div className='flex gap-3 items-center'>
         <Logo/>

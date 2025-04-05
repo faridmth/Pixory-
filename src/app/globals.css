@@ -1,14 +1,19 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
-
+*{
+    box-sizing: border-box;
+}
 .konvajs-content{
     background-color: rgb(238, 238, 238);    
-}
-.tooltip{
-    z-index: 1000;
+    height: "100%" !important;
 }
 .stages-container{
-    background-color: aqua;
+    background-color: rgb(255, 255, 255);    
+}
+.tooltip{
+    z-index: 100 !important;
 }
 
+
+    

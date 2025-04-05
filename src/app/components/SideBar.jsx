@@ -21,7 +21,8 @@ const IoSettingsOutlineIcon = <IoSettingsOutline size={22}/>
 const SideBar = () => {
   return (
     <aside className='h-full w-[95px]  border-r 
-     border-gray-300'>
+     border-gray-300 fixed top-[69px]
+     bg-white z-1 '>
       <SideBarOption title="Image" icon={CiImageOnIcon} onclick={()=>{}}/>
       <SideBarOption title="Text" icon={RxTextOnIcon} onclick={()=>{}}/>
       <SideBarOption title="Shapes" icon={LuShapesIcon} onclick={()=>{}}/>

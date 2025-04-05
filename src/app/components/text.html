@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Text Editor</title>
+    <script src="https://unpkg.com/konva@8.3.2/konva.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #canvas-container {
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .active {
+            background-color: #2E7D32;
+        }
+        #text-editor {
+            position: absolute;
+            display: none;
+            z-index: 100;
+            background: white;
+            padding: 10px;
+            border: 2px solid #0099ff;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+        #text-area {
+            width: 300px;
+            height: 150px;
+            border: none;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+            font-size: inherit;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>Professional Text Editor</h1>
+        <div class="toolbar">
+            <button id="add-text">Add Text</button>
+            <button id="bold-btn"><b>B</b></button>
+            <button id="italic-btn"><i>I</i></button>
+            <button id="delete-btn">Delete</button>
+            <div>
+                Font size: <input type="number" id="font-size" min="8" max="144" value="24">
+            </div>
+        </div>
+        <div id="canvas-container"></div>
+    </div>
+    <div id="text-editor">
+        <textarea id="text-area"></textarea>
+    </div>
+
+    <script>
+        // Initialize Konva stage
+        const stage = new Konva.Stage({
+            container: 'canvas-container',
+            width: 800,
+            height: 600
+        });
+
+        const layer = new Konva.Layer();
+        stage.add(layer);
+
+        let selectedNode = null;
+        const transformer = new Konva.Transformer({
+            rotateEnabled: false,
+            borderStroke: '#0099ff',
+            anchorStroke: '#0099ff',
+            anchorFill: '#ffffff',
+            anchorSize: 10,
+            boundBoxFunc: function(oldBox, newBox) {
+                if (newBox.width < 30 || newBox.height < 30) {
+                    return oldBox;
+                }
+                return newBox;
+            }
+        });
+        layer.add(transformer);
+
+        // Text editor elements
+        const textEditor = document.getElementById('text-editor');
+        const textArea = document.getElementById('text-area');
+
+        // Add text button
+        document.getElementById('add-text').addEventListener('click', function() {
+            const textNode = new Konva.Text({
+                text: 'Double click to edit',
+                x: 50,
+                y: 50,
+                fontSize: parseInt(document.getElementById('font-size').value),
+                fontFamily: 'Arial',
+                fill: '#000000',
+                draggable: true,
+                padding: 10
+            });
+
+            layer.add(textNode);
+            selectNode(textNode);
+            layer.draw();
+        });
+
+        // Text editing functions
+        function showTextEditor(textNode) {
+            const stageRect = stage.container().getBoundingClientRect();
+            textArea.value = textNode.text();
+            textArea.style.fontSize = textNode.fontSize() + 'px';
+            textArea.style.fontFamily = textNode.fontFamily();
+            textArea.style.color = textNode.fill();
+            textArea.style.fontWeight = textNode.fontStyle().includes('bold') ? 'bold' : 'normal';
+            textArea.style.fontStyle = textNode.fontStyle().includes('italic') ? 'italic' : 'normal';
+            
+            textEditor.style.display = 'block';
+            textEditor.style.left = (stageRect.left + textNode.x()) + 'px';
+            textEditor.style.top = (stageRect.top + textNode.y()) + 'px';
+            
+            textArea.focus();
+            textArea.select();
+        }
+
+        function hideTextEditor() {
+            if (selectedNode) {
+                selectedNode.text(textArea.value);
+                layer.draw();
+            }
+            textEditor.style.display = 'none';
+        }
+
+        // Event handlers
+        textArea.addEventListener('blur', hideTextEditor);
+        textArea.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                hideTextEditor();
+            }
+        });
+
+        stage.on('dblclick', function(e) {
+            if (e.target instanceof Konva.Text) {
+                selectNode(e.target);
+                showTextEditor(e.target);
+            } else {
+                transformer.nodes([]);
+                selectedNode = null;
+                layer.draw();
+            }
+        });
+
+        stage.on('click tap', function(e) {
+            if (e.target instanceof Konva.Text) {
+                selectNode(e.target);
+            } else {
+                transformer.nodes([]);
+                selectedNode = null;
+                layer.draw();
+            }
+        });
+
+        function selectNode(node) {
+            if (selectedNode) {
+                selectedNode.shadowColor(null);
+                selectedNode.shadowBlur(0);
+            }
+            
+            selectedNode = node;
+            transformer.nodes([node]);
+            
+            node.shadowColor('#0099ff');
+            node.shadowBlur(10);
+            
+            document.getElementById('bold-btn').classList.toggle(
+                'active', node.fontStyle().includes('bold')
+            );
+            document.getElementById('italic-btn').classList.toggle(
+                'active', node.fontStyle().includes('italic')
+            );
+            document.getElementById('font-size').value = parseInt(node.fontSize());
+            
+            layer.draw();
+        }
+
+        // Transformer resize logic
+        transformer.on('transform', function() {
+            if (!selectedNode) return;
+            
+            const scaleX = selectedNode.scaleX();
+            const scaleY = selectedNode.scaleY();
+            const activeAnchor = transformer.getActiveAnchor();
+            
+            // Reset scale after applying changes
+            selectedNode.scaleX(1);
+            selectedNode.scaleY(1);
+            
+            if (activeAnchor.includes('top') || activeAnchor.includes('bottom')) {
+                // Corner resize - scale font
+                const scale = Math.min(scaleX, scaleY);
+                selectedNode.fontSize(selectedNode.fontSize() * scale);
+            } else {
+                // Side resize - adjust width
+                selectedNode.width(selectedNode.width() * scaleX);
+            }
+            
+            layer.draw();
+        });
+
+        // Toolbar buttons
+        document.getElementById('bold-btn').addEventListener('click', function() {
+            if (selectedNode) {
+                const currentStyle = selectedNode.fontStyle();
+                selectedNode.fontStyle(
+                    currentStyle.includes('bold') ? 
+                    currentStyle.replace('bold', '').trim() : 
+                    currentStyle + ' bold'
+                );
+                this.classList.toggle('active');
+                layer.draw();
+            }
+        });
+
+        document.getElementById('italic-btn').addEventListener('click', function() {
+            if (selectedNode) {
+                const currentStyle = selectedNode.fontStyle();
+                selectedNode.fontStyle(
+                    currentStyle.includes('italic') ? 
+                    currentStyle.replace('italic', '').trim() : 
+                    currentStyle + ' italic'
+                );
+                this.classList.toggle('active');
+                layer.draw();
+            }
+        });
+
+        document.getElementById('delete-btn').addEventListener('click', function() {
+            if (selectedNode) {
+                selectedNode.destroy();
+                transformer.nodes([]);
+                selectedNode = null;
+                layer.draw();
+            }
+        });
+
+        document.getElementById('font-size').addEventListener('change', function() {
+            if (selectedNode) {
+                selectedNode.fontSize(parseInt(this.value));
+                layer.draw();
+            }
+        });
+
+        // Handle clicks outside editor
+        document.addEventListener('click', function(e) {
+            if (textEditor.style.display === 'block' && 
+                !textEditor.contains(e.target) && 
+                e.target.id !== 'text-area') {
+                hideTextEditor();
+            }
+        });
+    </script>
+</body>
+</html>
