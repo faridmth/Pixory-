@@ -1,10 +1,11 @@
 "use client"
 import { useEffect, useRef, useState } from "react";
 import NavBar from "./components/NavBar";
-import SideBar from "./components/SideBar";
+import SideBar from "./components/sidebars/SideBar";
 import StageContainer from "./components/StageContainer";
 import ToolBar from "./components/ToolBar";
 import Footer from "./components/Footer";
+import { useSideBar } from "./store/side-bar";
 
 const design_Width = 1900;
 const design_Height = 500;
@@ -16,17 +17,9 @@ export default function Home() {
   const isZoomingRef = useRef(false);
   const scrollBarRef = useRef(false);
   const scrollContentRef = useRef(false);
-  const [contentWidth, setContentWidth] = useState(2000);
-
-  useEffect(()=>{
-    if (!stagesContRef.current) return;
-    const paddingX = 80;
-    setContentWidth(stagesContRef.current.scrollWidth+paddingX)
-
-  },[scale])
-
-
-
+  const toolPanelModalOpen = useSideBar((state)=>state.toolPanelModalOpen)
+  console.log(toolPanelModalOpen)
+  
   useEffect(() => {
     if (!scrollBarRef.current || !stagesContRef.current || !scrollContentRef.current) return;
     
@@ -62,8 +55,13 @@ export default function Home() {
       <NavBar/> 
       <div className="w-full flex absolute h-[calc(100%-69px)]">
         <SideBar/>
-        <main className="min-w-[calc(100%-95px)] ml-[95px] mt-[69px]
-         h-full  ">
+        <main 
+            className={`mt-[69px] h-full`}
+            style={{ 
+              width: `calc(100% - ${toolPanelModalOpen ? 395 : 95}px)`,
+              marginLeft: `${toolPanelModalOpen ? 395 : 95}px`
+            }}
+        >          
           <ToolBar/>
           <div
             className=" stages-container   
@@ -74,20 +72,27 @@ export default function Home() {
             <StageContainer stageSetter={setStages} stages={stages} isZoomingRef={isZoomingRef} setScale ={setScale}/>         
             <StageContainer stageSetter={setStages} stages={stages} isZoomingRef={isZoomingRef} setScale ={setScale}/>         
           </div>
-          <div className="w-full h-[15px] bg-white fixed bottom-[40px] overflow-auto " ref={scrollBarRef}>
-            <div className="h-[5px]"style={{ width: `${contentWidth}px` }}  ref={scrollContentRef}></div> 
-          </div>    
 
-          <Footer 
-          stages={stages}
-           scale={scale} 
-           setScale={setScale}
-           design_Height={design_Height}
-           design_Width={design_Width}
-           isZoomingRef={isZoomingRef}
-           setContentWidth={setContentWidth}
-
-           />
+          <div 
+            className={` h-[15px] bg-white fixed bottom-[40px] overflow-x-auto overflow-y-hidden`}
+            style={{ 
+              display: stages.length !== 0 && stages[0].width() > stagesContRef.current?.clientWidth ? 'block' : 'none',
+              width: `calc(100% - ${toolPanelModalOpen ? 395 : 95}px)`,
+            }}
+            ref={scrollBarRef}
+          >
+            <div className="h-[5px]" style={{ width: `${stages.length !== 0 ? stages[0].width() : 0}px` }} ref={scrollContentRef}></div> 
+          </div>
+          {stages.length > 0 && (
+            <Footer
+              stages={stages}
+              scale={scale}
+              setScale={setScale}
+              design_Height={design_Height}
+              design_Width={design_Width}
+              isZoomingRef={isZoomingRef}
+            />
+        )}
         </main>
       </div>
     </div>

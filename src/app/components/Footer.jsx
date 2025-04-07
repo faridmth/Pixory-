@@ -2,12 +2,12 @@ import { useState } from "react";
 import ToolBtn from "./ToolBtn";
 import { LuZoomIn } from "react-icons/lu";
 import { LuZoomOut } from "react-icons/lu";
+import { useSideBar } from "../store/side-bar";
 
 const LuZoomInIcon = <LuZoomIn size={16}/>
 const LuZoomOutIcon = <LuZoomOut size={16}/>
 
 const Footer = ({stages, scale, setScale,design_Height,design_Width,isZoomingRef}) => {
-  if(stages.length === 0) return null;
 
   // function to recenter the main Rect :
   const recenterRect = (stage,newScale)=>{
@@ -122,9 +122,6 @@ const Footer = ({stages, scale, setScale,design_Height,design_Width,isZoomingRef
       const requiredWidth = scaledRectWidth + (paddingX * 2);
       const requiredHeight = scaledRectHeight + (paddingY * 2);
 
-      console.log(requiredHeight)
-      console.log(containerHeight)
-      console.log("-------------")
       
       stage.width(Math.max(containerWidth, requiredWidth));
       stage.height(Math.max(containerHeight, requiredHeight));
@@ -139,10 +136,18 @@ const Footer = ({stages, scale, setScale,design_Height,design_Width,isZoomingRef
       isZoomingRef.current = false;
     }, 100);
   };
+
+  const toolPanelModalOpen = useSideBar((state)=>state.toolPanelModalOpen)
+  
   
   return (
-    <div className='w-[calc(100%-95px)] h-[40px] fixed bottom-[0px] 
-     bg-white z-1 flex justify-end pr-8 items-center'>
+    <div className='w-[calc(100%-395px)] h-[40px] fixed bottom-[0px] 
+     bg-white z-1 flex justify-end pr-8 items-center'
+     style={{ 
+      width: `calc(100% - ${toolPanelModalOpen ? 395 : 95}px)`,
+    }}
+
+     >
         <ToolBtn tooltip="Zoom In" icon={LuZoomInIcon} tooltipDir="top" onClick={zoomIn}/>
         <p className='mx-2'>{(scale*100).toFixed(0)}%</p>
         <ToolBtn tooltip="Zoom Out" icon={LuZoomOutIcon} tooltipDir="top" onClick={zoomOut}/>
