@@ -2,27 +2,13 @@ import { useState } from "react";
 import ToolBtn from "./ToolBtn";
 import { LuZoomIn } from "react-icons/lu";
 import { LuZoomOut } from "react-icons/lu";
-import { useSideBar } from "../store/side-bar";
+import { useGlobalState } from "../store/store";
 
 const LuZoomInIcon = <LuZoomIn size={16}/>
 const LuZoomOutIcon = <LuZoomOut size={16}/>
 
 const Footer = ({stages, scale, setScale,design_Height,design_Width,isZoomingRef}) => {
-
-  // function to recenter the main Rect :
-  const recenterRect = (stage,newScale)=>{
-    let mainRect = stage.findOne('.main-rect');
-    if (mainRect) {
-      const width = stage.width();
-      const height = stage.height();
-      
-      mainRect.x((width / (2 * newScale)) - (design_Width / 2));
-      mainRect.y((height / (2 * newScale)) - (design_Height / 2));
-    }
-    
-    stage.draw();
-  }
-  
+ 
   const zoomIn = () => {
     isZoomingRef.current = true;
     
@@ -31,12 +17,13 @@ const Footer = ({stages, scale, setScale,design_Height,design_Width,isZoomingRef
     stages.forEach(stage => {
       // Store the important element (mainRect)
       const mainRect = stage.findOne('.main-rect');
+      if(mainRect===undefined) return
       const mainRectOriginalWidth = mainRect.width();
       const mainRectOriginalHeight = mainRect.height();
       
       // Get container and fully reset it
       const container = stage.getContainer();
-      
+
       // FULL RESET - Clear any previous dimensions completely
       stage.scale({ x: 1, y: 1 }); // Reset to base scale
       
@@ -56,20 +43,38 @@ const Footer = ({stages, scale, setScale,design_Height,design_Width,isZoomingRef
       const scaledRectWidth = mainRectOriginalWidth * newScale;
       const scaledRectHeight = mainRectOriginalHeight * newScale;
       
-      // Add padding around the rect (20% of container)
-      const paddingX = containerWidth * 0.03;
-      const paddingY = containerHeight * 0.03;
+      // Add padding around the rect 
+      const paddingX = containerWidth * 0.05;
+      const paddingY = containerHeight * 0.05;
       
       // Set stage size to fit content with padding
       const requiredWidth = scaledRectWidth + (paddingX * 2);
       const requiredHeight = scaledRectHeight + (paddingY * 2);
+
       
       stage.width(Math.max(containerWidth, requiredWidth));
       stage.height(Math.max(containerHeight, requiredHeight));
+        // Calculate center position of the stage/container
+        const stageCenter = {
+          x: stage.width() / 2,
+          y: stage.height() / 2
+        };
+        
+        // Apply the scale first (this is important)
+        stage.scale({ x: newScale, y: newScale });
+        
+        // Position the stage to center the content
+        // This centers the entire stage content without specifically targeting any rectangle
+        const newPos = {
+          x: stageCenter.x - (design_Width * newScale / 2),
+          y: stageCenter.y - (design_Height * newScale / 2)
+        };
+        
+        stage.position(newPos);
 
       
       // Recenter main rectangle
-      recenterRect(stage, newScale);
+      //recenterRect(stage, newScale);
     });
     
     setScale(newScale);
@@ -90,6 +95,7 @@ const Footer = ({stages, scale, setScale,design_Height,design_Width,isZoomingRef
     stages.forEach(stage => {
       // Store the important element (mainRect)
       const mainRect = stage.findOne('.main-rect');
+      if(mainRect===undefined) return
       const mainRectOriginalWidth = mainRect.width();
       const mainRectOriginalHeight = mainRect.height();
       
@@ -114,9 +120,9 @@ const Footer = ({stages, scale, setScale,design_Height,design_Width,isZoomingRef
       const scaledRectHeight = mainRectOriginalHeight * newScale;    
 
       
-      // Add padding around the rect (20% of container)
-      const paddingX = containerWidth * 0.03;
-      const paddingY = containerHeight * 0.03;
+      // Add padding around the rect 
+      const paddingX = containerWidth * 0.05;
+      const paddingY = containerHeight * 0.05;
       
       // Set stage size to fit content with padding
       const requiredWidth = scaledRectWidth + (paddingX * 2);
@@ -125,9 +131,26 @@ const Footer = ({stages, scale, setScale,design_Height,design_Width,isZoomingRef
       
       stage.width(Math.max(containerWidth, requiredWidth));
       stage.height(Math.max(containerHeight, requiredHeight));
-      container.style.height = `${Math.max(containerHeight, requiredHeight)}px`;      
-      // Recenter main rectangle
-      recenterRect(stage, newScale);
+      container.style.height = `${Math.max(containerHeight, requiredHeight)}px`;  
+      
+      
+      // Calculate center position of the stage/container
+      const stageCenter = {
+        x: stage.width() / 2,
+        y: stage.height() / 2
+        };
+        
+        // Apply the scale first (this is important)
+      stage.scale({ x: newScale, y: newScale });
+
+      // Position the stage to center the content
+      // This centers the entire stage content without specifically targeting any rectangle
+      const newPos = {
+        x: stageCenter.x - (design_Width * newScale / 2),
+        y: stageCenter.y - (design_Height * newScale / 2)
+        };
+              
+        stage.position(newPos);
     });
     
     setScale(newScale);
@@ -137,7 +160,7 @@ const Footer = ({stages, scale, setScale,design_Height,design_Width,isZoomingRef
     }, 100);
   };
 
-  const toolPanelModalOpen = useSideBar((state)=>state.toolPanelModalOpen)
+  const toolPanelModalOpen = useGlobalState((state)=>state.toolPanelModalOpen)
   
   
   return (

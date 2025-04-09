@@ -5,7 +5,7 @@ import SideBar from "./components/sidebars/SideBar";
 import StageContainer from "./components/StageContainer";
 import ToolBar from "./components/ToolBar";
 import Footer from "./components/Footer";
-import { useSideBar } from "./store/side-bar";
+import { useGlobalState } from "./store/store";
 
 const design_Width = 1900;
 const design_Height = 500;
@@ -17,8 +17,7 @@ export default function Home() {
   const isZoomingRef = useRef(false);
   const scrollBarRef = useRef(false);
   const scrollContentRef = useRef(false);
-  const toolPanelModalOpen = useSideBar((state)=>state.toolPanelModalOpen)
-  console.log(toolPanelModalOpen)
+  const toolPanelModalOpen = useGlobalState((state)=>state.toolPanelModalOpen)
   
   useEffect(() => {
     if (!scrollBarRef.current || !stagesContRef.current || !scrollContentRef.current) return;
@@ -27,6 +26,7 @@ export default function Home() {
     const handleScrollBarScroll = () => {
       if (isZoomingRef.current) return; // Don't sync during zooming
       stagesContRef.current.scrollLeft = scrollBarRef.current.scrollLeft;
+
     };
     
     // Sync container -> scrollbar
@@ -37,6 +37,7 @@ export default function Home() {
     
     scrollBarRef.current.addEventListener('scroll', handleScrollBarScroll);
     stagesContRef.current.addEventListener('scroll', handleContainerScroll);
+
     
     return () => {
       window.removeEventListener('resize', updateScrollWidth);
@@ -69,8 +70,11 @@ export default function Home() {
              overflow-auto mt-[40px] pb-[50px] gap-2 w-full "
             ref={stagesContRef}
           >      
-            <StageContainer stageSetter={setStages} stages={stages} isZoomingRef={isZoomingRef} setScale ={setScale}/>         
-            <StageContainer stageSetter={setStages} stages={stages} isZoomingRef={isZoomingRef} setScale ={setScale}/>         
+            <StageContainer setStages={setStages} stages={stages} isZoomingRef={isZoomingRef} setScale ={setScale}/>         
+            <StageContainer setStages={setStages} stages={stages} isZoomingRef={isZoomingRef} setScale ={setScale}/>         
+            <StageContainer setStages={setStages} stages={stages} isZoomingRef={isZoomingRef} setScale ={setScale}/>         
+            <StageContainer setStages={setStages} stages={stages} isZoomingRef={isZoomingRef} setScale ={setScale}/>         
+            <StageContainer setStages={setStages} stages={stages} isZoomingRef={isZoomingRef} setScale ={setScale}/>         
           </div>
 
           <div 

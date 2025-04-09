@@ -1,11 +1,11 @@
 import React from 'react'
-import { useSideBar } from '../../store/side-bar'
+import { useGlobalState } from '../../store/store'
 
 const SideBarOption = ({icon,title}) => {
 
-  const sideBarChoosedOption = useSideBar((state)=>state.sideBarChoosedOption)
-  const setSideBarChoosedOption = useSideBar((state)=>state.setSideBarChoosedOption)
-  const setToolPanelModalOpen = useSideBar((state)=>state.setToolPanelModalOpen)
+  const sideBarChoosedOption = useGlobalState((state)=>state.sideBarChoosedOption)
+  const setSideBarChoosedOption = useGlobalState((state)=>state.setSideBarChoosedOption)
+  const setToolPanelModalOpen = useGlobalState((state)=>state.setToolPanelModalOpen)
   const handleClick =  ()=>{
     if(sideBarChoosedOption!==title){
       setSideBarChoosedOption(title)

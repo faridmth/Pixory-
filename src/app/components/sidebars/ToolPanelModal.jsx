@@ -1,9 +1,9 @@
-import { useSideBar } from '@/app/store/side-bar';
+import { useGlobalState } from '@/app/store/store';
 
 const ToolPanelModal = ({children}) => {
-        const toolPanelModalOpen = useSideBar((state)=>state.toolPanelModalOpen)
-        const setToolPanelModalOpen = useSideBar((state)=>state.setToolPanelModalOpen)
-        const setSideBarChoosedOption = useSideBar((state)=>state.setSideBarChoosedOption)
+        const toolPanelModalOpen = useGlobalState((state)=>state.toolPanelModalOpen)
+        const setToolPanelModalOpen = useGlobalState((state)=>state.setToolPanelModalOpen)
+        const setSideBarChoosedOption = useGlobalState((state)=>state.setSideBarChoosedOption)
 
     const toggleSidebar = () => {
       setToolPanelModalOpen()
